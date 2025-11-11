@@ -1,0 +1,40 @@
+import jwt from "jsonwebtoken";
+import { User } from "../model/user.model.js";
+import { ENV_VARS } from "../config/envVars.js";
+
+export const protectRoute = async (req, res, next) => {
+  try {
+    const token = req.cookies["jwt-bookApp"];
+
+    if (!token) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized - No Token Provided" });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, ENV_VARS.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ success: false, message: "Invalid Token" });
+    }
+
+    const user = await User.findById(decoded.userId).select("-password");
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    req.user = user;
+    console.log("🔐 Token received:", req.cookies["jwt-bookApp"]);
+    console.log("🔐 Decoded user:", decoded);
+    console.log("🔐 User fetched:", user);
+
+    next();
+  } catch (error) {
+    console.log("Error in protectRoute middleware: ", error.message);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
