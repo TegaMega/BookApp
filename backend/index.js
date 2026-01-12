@@ -7,10 +7,11 @@ import { connectDB } from "./config/db.js";
 import cors from "cors";
 import { protectRoute } from "./middleware/protectRoute.js";
 import cookieParser from "cookie-parser";
-import part from "path";
+import path from "path";
+import { ENV_VARS } from "./config/envVars.js";
 
 const app = express();
-const _dirname = path.resolve()
+const _dirname = path.resolve();
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -26,11 +27,11 @@ app.use("/api/auth", authRoutes);
 app.use("/api/search", protectRoute, searchRoutes);
 app.use("/api/bookshelf", protectRoute, bookShelfRoutes);
 
-if(ENV_VARS.NODE_ENV === "production") {
-  app.use(express.static(path.join(_dirname,"/frontend/dist")));
-  app.get("*",(req,res) => {
-    res.sendFile(path.resolve(_dirname,"frontend","dist","index.html"))
-  })
+if (ENV_VARS.NODE_ENV === "production") {
+  app.use(express.static(path.join(_dirname, "/frontend/dist")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(_dirname, "frontend", "dist", "index.html"));
+  });
 }
 
 app.listen("3000", () => {
